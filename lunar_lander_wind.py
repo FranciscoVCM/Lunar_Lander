@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 import pygame
 
-ENABLE_WIND = False
+ENABLE_WIND = True
 WIND_POWER = 15.0
 TURBULENCE_POWER = 0.0
 GRAVITY = -10.0
@@ -192,7 +192,7 @@ def reactive_agent(observation):
     if both_legs_touching(observation):
         return do_nothing()
 
-    ##Trav|ao de queda
+    ##Travao de queda
     if emergency_fall(observation):
         return full_thrust()
     if heavy_fall(observation):
@@ -205,7 +205,7 @@ def reactive_agent(observation):
     th = tilt(observation)
     vth = ang_vel(observation)
 
-    ## Escolher o theta com base na previs|ao dp erro lateral
+    ## Escolher o theta com base na previsao dp erro lateral
     x_future = lateral_prediction(observation)
     band = altitude_band(observation)
 
