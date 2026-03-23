@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 import pygame
 
-ENABLE_WIND = True
+ENABLE_WIND = False
 WIND_POWER = 15.0
 TURBULENCE_POWER = 0.0
 GRAVITY = -10.0
@@ -145,40 +145,6 @@ def full_thrust():
 
 def strong_thrust():
     return np.array([0.8, 0.0])
-
-def medium_thrust():
-    return np.array([0.55, 0.0])
-
-def light_thrust():
-    return np.array([0.35, 0.0])
-
-def hover_thrust():
-    return np.array([0.2, 0.0])
-
-def rotate_right_strong():
-    return np.array([0.0, 0.8])
-
-def rotate_left_strong():
-    return np.array([0.0, -0.8])
-
-def rotate_right_soft():
-    return np.array([0.0, 0.6])
-
-def rotate_left_soft():
-    return np.array([0.0, -0.6])
-
-def rotate_right_gentle():
-    return np.array([0.0, 0.55])
-
-def rotate_left_gentle():
-    return np.array([0.0, -0.55])
-
-def thrust_and_rotate_right(t=0.4, r=0.6):
-    return np.array([t, r])
-
-def thrust_and_rotate_left(t=0.4, r=-0.6):
-    return np.array([t, r])
-
 
 def thrust_and_rotate(thrust, rotation):
     return np.array([float(np.clip(thrust, 0.0, 1.0)), float(np.clip(rotation, -1.0, 1.0))])
