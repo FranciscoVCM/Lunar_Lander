@@ -6,7 +6,7 @@ import os
 from multiprocessing import Process, Queue
 
 # CONFIG
-ENABLE_WIND = False
+ENABLE_WIND = True
 WIND_POWER = 15.0
 TURBULENCE_POWER = 0.0
 GRAVITY = -10.0
@@ -288,12 +288,12 @@ if __name__ == '__main__':
     #render_mode = None
 
     #--to test the evolved controller without visualisation--
-    #evolve = False
-    #render_mode = None
+    evolve = False
+    render_mode = None
 
     #--to test the evolved controller with visualisation--
-    evolve = False
-    render_mode = 'human'
+    #evolve = False
+    #render_mode = 'human'
     
     
     if evolve:
@@ -311,7 +311,7 @@ if __name__ == '__main__':
     else:
         #test evolved individuals
         #pick the file to test
-        filename = 'log0.txt' #pode-se mudar para os logs entre 0 e 4
+        filename = 'log4.txt' #pode-se mudar para os logs entre 0 e 4
         bests = load_bests(filename)
         b = bests[-1]
         SHAPE = b[1]

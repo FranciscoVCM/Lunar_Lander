@@ -5,6 +5,8 @@ import gymnasium as gym
 import os
 from multiprocessing import Process, Queue
 
+#Alterações: Cada nave tem 3 oportunidades para cancelar o fator sorte do vento, e a fitness é a média das 3 simulações.
+#Alterações: O Sistema de rewards foi aumentado para valorizar o caminho e a manutençao de estabilidade e nao so o estado final
 # CONFIG
 ENABLE_WIND = True
 WIND_POWER = 15.0
@@ -21,7 +23,7 @@ evaluatedQueue = Queue()
 
 nInputs = 8
 nOutputs = 2
-SHAPE = (nInputs,12,nOutputs)
+SHAPE = (nInputs,12,nOutputs) 
 GENOTYPE_SIZE = 0
 for i in range(1, len(SHAPE)):
     GENOTYPE_SIZE += SHAPE[i-1]*SHAPE[i]
@@ -106,9 +108,24 @@ def objective_function(observation_history):
     # reward grande para aterragens bem sucedidas
     success_bonus = 100.0 if successful_landing else 0.0
 
+    flight_bonus = 0.0
+    
+    for obs in observation_history:
+        current_x = obs[0]
+        current_vx = obs[2]
+        
+        #Se nave se aguentar no meio (x entre -0.5 e 0.5), ganha pontos por estar a lutar contra o vento.
+        if abs(current_x) < 0.5:
+            flight_bonus += 0.1
+            
+        # Recompensa a nave por manter uma velocidade horizontal baixa, pois mais vez está a lutar contra o vento.
+        if abs(current_vx) < 0.3:
+            flight_bonus += 0.1
+
+    # Somatório final
     fitness = (distance_score + velocity_score + attitude_score +
                leg_contact_score + pad_bonus + stable_velocity_bonus +
-               stable_orientation_bonus + success_bonus)
+               stable_orientation_bonus + success_bonus + flight_bonus)
 
     return fitness, successful_landing
 
@@ -148,12 +165,18 @@ def evaluate(evaluationQueue, evaluatedQueue):
         turbulence_power=TURBULENCE_POWER)    
     while True:
         ind = evaluationQueue.get()
-
         if ind is None:
             break
             
-        ind['fitness'] = simulate(ind['genotype'], seed = None, env = env)[0]
-                
+        # Avaliar 3 vezes e tirar a média
+        #serve para cancelar o fator sorte do vento, uma nova boa pode ter azar e apanhar um vento muito forte
+        total_fitness = 0
+        num_episodes = 3
+        for _ in range(num_episodes):
+            f, _ = simulate(ind['genotype'], seed=None, env=env)
+            total_fitness += f
+            
+        ind['fitness'] = total_fitness / num_episodes
         evaluatedQueue.put(ind)
     env.close()
     
@@ -288,12 +311,12 @@ if __name__ == '__main__':
     #render_mode = None
 
     #--to test the evolved controller without visualisation--
-    #evolve = False
-    #render_mode = None
+    evolve = False
+    render_mode = None
 
     #--to test the evolved controller with visualisation--
-    evolve = False
-    render_mode = 'human'
+    #evolve = False
+    #render_mode = 'human'
     
     
     if evolve:
@@ -303,7 +326,7 @@ if __name__ == '__main__':
         for i in range(n_runs):    
             random.seed(seeds[i])
             bests = evolution()
-            with open(f'log{i}.txt', 'w') as f:
+            with open(f'logW{i}.txt', 'w') as f:
                 for b in bests:
                     f.write(f'{b[1]}\t{SHAPE}\t{b[0]}\n')
 
@@ -311,7 +334,7 @@ if __name__ == '__main__':
     else:
         #test evolved individuals
         #pick the file to test
-        filename = 'log0.txt' #pode-se mudar para os logs entre 0 e 4
+        filename = 'logW4.txt' #pode-se mudar para os logs entre 0 e 4
         bests = load_bests(filename)
         b = bests[-1]
         SHAPE = b[1]
